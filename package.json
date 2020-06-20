@@ -2,13 +2,21 @@
   "name": "chatserver",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --verbose"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "@babel/core": "^7.10.2",
+    "@babel/preset-env": "^7.10.2",
+    "axios": "^0.19.2",
+    "babel-jest": "^26.0.1",
+    "express": "^4.17.1",
+    "jest": "^26.0.1",
+    "readline-sync": "^1.4.10",
+    "sqlite3": "^4.2.0"
   }
 }
