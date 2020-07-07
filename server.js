@@ -11,7 +11,9 @@ GET can recieve URL paramaters (/conversations/:usernameValue) or URL queries (/
 const app = express()
 app.use(express.json())     // All post requests should have data encoded in the body as JSON
 app.use(express.urlencoded({extended: true}))   //All get requests should have data encoded in the URL (path paramaters and queries)
+app.use(express.static('./client/build'))
 const db = new sqlite3.Database('./database.db') 
+
 
 //Messages database
 db.run(`CREATE TABLE IF NOT EXISTS messages (
@@ -19,18 +21,22 @@ db.run(`CREATE TABLE IF NOT EXISTS messages (
     sender varchar(50) NOT NULL,
     reciever varchar(50) NOT NULL,
     message varchar(1000) NOT NULL,
-    date timestamp NOT NULL DEFAULT current_timestamp
+    timestamp varchar(20) NOT NULL
 )`)
 
 db.run(`CREATE TABLE IF NOT EXISTS users (
-    username varchar(50) PRIMARY KEY
+    username varchar(50) PRIMARY KEY,
     password varchar(50) NOT NULL
 )`)
 
 //Server
+app.get('/', (req, res) => {
+    res.sendFile('./client/build/index.html')
+})
+
 app.get('/conversations/:username', (req, res) => {
     const {username} = req.params   //params, not body
-    db.all('SELECT sender, reciever, message, date \
+    db.all('SELECT sender, reciever, message, timestamp \
     FROM messages \
     WHERE sender=? OR reciever=?', [username, username], (err, messages) => {
         if (err) throw err
@@ -40,25 +46,31 @@ app.get('/conversations/:username', (req, res) => {
 
 app.post('/login', (req, res) => {
     const {username, password} = req.body
-    db.get('SELECT ')
+    db.get('SELECT * FROM users WHERE username=? AND password=?', [username, password], (err, data) => {
+        if(err) throw err
+        res.send(!!data)
+    })
 })
 
 app.post('/register', (req, res) => {
     const {username, password} = req.body
-
+    db.run('INSERT INTO users VALUES (?, ?)', [username, password], (err) => {
+        res.send(!err)
+    })
 })
 
-const port = 3000
+const port = process.argv[2] || 8080
 const server = app.listen(port, () => console.log("Server listening on port " + port) )
 
 //Socket
 const io = socketIO(server)
 
 io.on('connection', (socket) => {
-    socket.on('message', ({sender, reciever, message}) => {
-        db.run(`INSERT INTO messages (sender, reciever, message) 
-            VALUES (?, ?, ?)`, [sender, reciever, message])
+    socket.on('message', ({sender, reciever, message, timestamp}) => {
+        db.run(`INSERT INTO messages (sender, reciever, message, timestamp) 
+            VALUES (?, ?, ?, ?)`, [sender, reciever, message, timestamp])
     })
+    socket.on('error', console.log)
 })
 
 //Util function

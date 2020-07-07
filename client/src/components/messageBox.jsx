@@ -6,11 +6,23 @@ export default function MessageBox(props) {
 
     const handleSubmit = (event) => {
         event.preventDefault()
-        socket.emit("message", {
+        let today = new Date()
+        let time = today.toLocaleTimeString()
+        //Format: Jun 04, 05:08 AM
+        let timestamp = today.toDateString().slice(4, 10) + 
+                                                     ', ' + 
+                             time.slice(0, time.length-6) + 
+                                                      ' ' + 
+                     time.slice(time.length-2, time.length)
+
+        let message = {
           sender: username,
           reciever: selectedChat,
           message: message,
-        });
+          timestamp: timestamp,
+        };
+        socket.emit("message", message);
+        appendMessage(message)
     }
 
     const handleChange = (event) => setMessage(event.target.value);

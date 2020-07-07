@@ -6,7 +6,6 @@ module.exports = {
   mode: "development",
   entry: [
     "./client/src/index.js",
-    "./client/public/index.html",
     "./client/public/stylesheet.sass",
   ],
   output: {
@@ -24,6 +23,13 @@ module.exports = {
         },
       },
       {
+        test: /.(png|jpe?g|gif|ico|svg)$/, //image -> file
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]'
+        }
+      },
+      {
         test: /\.s[ca]ss$/, //SASS -> CSS -> file
         use: [
           {
@@ -39,14 +45,23 @@ module.exports = {
       },
     ],
   },
-  resolve: [".js", ".jsx", ".sass", ".scss"],
+  resolve: {
+    extensions: [".js", ".jsx", ".sass", ".scss"],
+    alias: {
+      public: '../../public/'
+    }
+  },
   devServer: {
     hotOnly: true,
+    port: 3000,
+    proxy: {
+      '/': 'http://localhost:8080'
+    }
   },
   plugins: [
     new HTMLWebpackPlugin({
-      template: "client/public/index.html",
-    //   favicon: "client/public/favicon.ico",
+      template: "./client/public/index.html",
+      favicon: "./client/public/favicon.ico"
     }),
     new MiniCSSExtractPlugin({ filename: "stylesheet.css" }),
   ],
