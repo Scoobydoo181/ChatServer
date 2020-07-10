@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios'
 import crypto from 'crypto'
 
-export default function SelectChat(props) {
+
+export const hash = (value) => crypto.createHash("md5").update(value).digest("hex");
+
+export default function Login(props) {
     const {setUsername} = props
     const [usernameValue, setUsernameValue] = useState('')
     const [passwordValue, setPasswordValue] = useState('')
     const [loginFailed, setLoginFailed] = useState(false)
     const [registerFailed, setRegisterFailed] = useState(false)
-
-    const hash = (value) => crypto.createHash("md5").update(value).digest("hex");
 
     const handleUsernameChange = (e) => setUsernameValue(e.target.value);
     const handlePasswordChange = (e) => setPasswordValue(e.target.value);
@@ -19,11 +20,12 @@ export default function SelectChat(props) {
         let validLogin = res.data
         if(validLogin)
             setUsername(usernameValue)
-        else
+        else {
             setLoginFailed(true)
             setUsernameValue("")
             setPasswordValue("")
         }
+    }
     const handleRegister = async () => {
         let res = await axios.post('http://localhost:3000/register', {username: usernameValue, password: hash(passwordValue)})
         let validUsername = res.data

@@ -43,49 +43,55 @@ function useMessages(username, selectedChat) {
     const [conversations, setConversations] = useState(null)
     const [socket, _] = useState( io("http://localhost:3000/") );
 
-    const appendMessage = (sender) => (newMessage) => {
-        let newConvos = conversations
-        if(newConvos[sender])
-            newConvos[sender].push(newMessage)
+    const appendMessage = (recipient) => (newMessage) => {
+        let newConvos = JSON.parse(JSON.stringify(conversations))
+        if(newConvos[recipient])
+            newConvos[recipient].push(newMessage)
         else
-            newConvos[sender] = [newMessage]
+            newConvos[recipient] = [newMessage]
         setConversations(newConvos)
+        updatePreviews()
+        updateMessages()
     }
 
-    useEffect(() => {
-        if(username) {
-            let isMounted = true
-            axios.get(`http://localhost:3000/conversations/${username}`).then( ({data}) => {
-                if(isMounted)
-                    setConversations(data)
-            })
-            
-            return () => {isMounted = false}
-        }
-    }, [username]);
+    function fetchConversations() {
+        if (!username) return
 
-    useEffect(() => {
-        if(conversations) {
-            let chats = Object.keys(conversations).map(person => {
-                let chat = conversations[person]
-                let last = chat[chat.length -1 ].message
-                return [person, last]
-            })
-            setPreviews(chats)
-        }
-    }, [conversations]);
+        let isMounted = true
+        axios.get(`http://localhost:3000/conversations/${username}`).then(({ data }) => {
+            if (isMounted)
+                setConversations(data)
+        })
+        return () => { isMounted = false }
+    }
 
-    useEffect(() => {
-        if(selectedChat)
-            setMessages(conversations[selectedChat] || [])
-    }, [conversations, selectedChat]);
+    function updatePreviews() {
+        if (!conversations) return
 
-    useEffect(() => {
+        setPreviews(Object.keys(conversations).map(person => {
+            let chat = conversations[person]
+            let last = chat[chat.length - 1].message
+            return [person, last]
+        }))
+    }
+
+    function updateMessages() {
+        if (!selectedChat) return
+
+        setMessages(conversations[selectedChat] || [])
+    }
+
+    function setSocketListener() {
         socket.on("message", (message) => {
-            if(message.reciever === username) 
+            if (message.reciever === username)
                 appendMessage(message.sender)(message)
         })
-    }, [username]);
+    }
+    
+    useEffect(fetchConversations, [username]);
+    useEffect(setSocketListener, [username]);
+    useEffect(updatePreviews, [conversations]);
+    useEffect(updateMessages, [conversations, selectedChat]);
 
     return [socket, previews, messages, appendMessage(selectedChat) ]
 }

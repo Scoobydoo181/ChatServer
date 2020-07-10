@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 import TitleBanner from './titleBanner'
 import Message from './message'
@@ -10,7 +10,7 @@ export default function Chat(props) {
     return (
         <>
             <TitleBanner setValue={setSelectedChat} title={selectedChat}/>
-            {messages?.map( (message) => <Message {...message} key={message.timestamp + Date.now()} username={username} /> )}
+            {messages?.map( (message, index) => <Message {...message} key={index} username={username} /> )}
             <MessageBox {...props}/>
         </>
     )

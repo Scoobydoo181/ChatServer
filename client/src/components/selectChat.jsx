@@ -5,6 +5,7 @@ import newMessage from 'public/newMessage.png'
 import TitleBanner from './titleBanner'
 import ChatPreview from './chatPreview'
 
+
 export default function SelectChat(props) {
     const {previews, setSelectedChat, setNewChat, username, setUsername} = props
 

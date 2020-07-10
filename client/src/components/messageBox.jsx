@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function MessageBox(props) {
     const {username, selectedChat, socket, appendMessage} = props
-    const [message, setMessage] = useState('')
+    const [chatText, setChatText] = useState('')
 
     const handleSubmit = (event) => {
         event.preventDefault()
@@ -18,18 +18,19 @@ export default function MessageBox(props) {
         let message = {
           sender: username,
           reciever: selectedChat,
-          message: message,
+          message: chatText,
           timestamp: timestamp,
         };
         socket.emit("message", message);
         appendMessage(message)
+        setChatText('')
     }
 
-    const handleChange = (event) => setMessage(event.target.value);
+    const handleChange = (event) => setChatText(event.target.value);
 
     return (
         <form className="messageBox" onSubmit={handleSubmit}>
-            <input type="text" value={message} name="message" onChange={handleChange} />
+            <input type="text" value={chatText} name="message" onChange={handleChange} />
             <button type="submit">Send</button>
         </form>
     )
